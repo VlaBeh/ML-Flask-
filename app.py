@@ -1,6 +1,7 @@
 from flask import Flask, request, render_template, jsonify
 from tensorflow.keras.models import load_model
 from tensorflow.keras.utils import load_img, img_to_array
+from werkzeug.utils import secure_filename
 import numpy as np
 import os
 
@@ -29,8 +30,13 @@ def predict():
     if file.filename == '':
         return jsonify({'error': 'No file selected'}), 400
 
-    # Збереження тимчасового файлу
-    filepath = os.path.join('uploads', file.filename)
+    # Перевірка та створення директорії 'uploads'
+    if not os.path.exists('uploads'):
+        os.makedirs('uploads')
+
+    # Безпечне ім'я файлу
+    filename = secure_filename(file.filename)
+    filepath = os.path.join('uploads', filename)
     file.save(filepath)
 
     # Попередня обробка зображення
@@ -46,7 +52,4 @@ def predict():
 
 
 if __name__ == '__main__':
-    # Створіть папку для завантаження, якщо її не існує
-    if not os.path.exists('uploads'):
-        os.makedirs('uploads')
     app.run(debug=True)
